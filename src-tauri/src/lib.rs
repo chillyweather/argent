@@ -27,6 +27,8 @@ pub fn run() {
 
             let file_menu = SubmenuBuilder::new(app, "File")
                 .item(&open_window)
+                .separator()
+                .item(&PredefinedMenuItem::quit(app, None)?)
                 .build()?;
 
             let edit_menu = SubmenuBuilder::new(app, "Edit")
