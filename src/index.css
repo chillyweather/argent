@@ -75,3 +75,79 @@ body,
 ::-webkit-scrollbar-thumb:hover {
   background: var(--argent-text-muted);
 }
+
+/* CodeMirror overrides */
+.cm-container .cm-editor {
+  height: 100%;
+}
+
+.cm-container .cm-editor.cm-focused {
+  outline: none;
+}
+
+.cm-container .cm-content {
+  color: var(--argent-text);
+}
+
+.cm-container .cm-scroller {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+}
+
+/* Live preview heading decorations */
+.cm-heading-1 {
+  font-size: 1.6em;
+  font-weight: bold;
+  line-height: 1.4;
+  margin-top: 0.3em;
+}
+
+.cm-heading-2 {
+  font-size: 1.35em;
+  font-weight: bold;
+  line-height: 1.4;
+  margin-top: 0.3em;
+}
+
+.cm-heading-3 {
+  font-size: 1.15em;
+  font-weight: bold;
+  line-height: 1.4;
+  margin-top: 0.2em;
+}
+
+.cm-heading-4 {
+  font-size: 1.05em;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+.cm-heading-5 {
+  font-size: 1em;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+.cm-heading-6 {
+  font-size: 0.95em;
+  font-weight: bold;
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+/* Live preview emphasis decorations */
+.cm-strong {
+  font-weight: bold;
+}
+
+.cm-emphasis {
+  font-style: italic;
+}
+
+.cm-inline-code {
+  background-color: var(--argent-bg-secondary);
+  border-radius: 3px;
+  padding: 0.1em 0.3em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+}

@@ -1,0 +1,116 @@
+import { useRef, useEffect, useCallback } from "react";
+import { EditorView, keymap, placeholder } from "@codemirror/view";
+import { EditorState } from "@codemirror/state";
+import { markdown } from "@codemirror/lang-markdown";
+import { defaultKeymap, history } from "@codemirror/commands";
+import { editorTheme } from "../lib/codemirror/theme";
+import { livePreview } from "../lib/codemirror/live-preview";
+
+interface MarkdownEditorProps {
+  value: string;
+  onChange: (value: string) => void;
+  onSave: () => void;
+  isSaving?: boolean;
+  autoFocus?: boolean;
+}
+
+export function MarkdownEditor({
+  value,
+  onChange,
+  onSave,
+  isSaving = false,
+  autoFocus = true,
+}: MarkdownEditorProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const viewRef = useRef<EditorView | null>(null);
+  const onSaveRef = useRef(onSave);
+  const onChangeRef = useRef(onChange);
+  const isSavingRef = useRef(isSaving);
+
+  onSaveRef.current = onSave;
+  onChangeRef.current = onChange;
+  isSavingRef.current = isSaving;
+
+  const handleSave = useCallback((_view: EditorView): boolean => {
+    if (isSavingRef.current) return false;
+    onSaveRef.current();
+    return true;
+  }, []);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const state = EditorState.create({
+      doc: value,
+      extensions: [
+        history(),
+        markdown(),
+        keymap.of([
+          ...defaultKeymap,
+          { key: "Mod-Enter", run: handleSave },
+        ]),
+        EditorView.lineWrapping,
+        placeholder("Start typing…"),
+        editorTheme,
+        livePreview,
+        EditorView.updateListener.of((update) => {
+          if (update.docChanged) {
+            onChangeRef.current(update.state.doc.toString());
+          }
+        }),
+        EditorView.editable.of(!isSaving),
+      ],
+    });
+
+    const view = new EditorView({
+      state,
+      parent: containerRef.current,
+    });
+
+    viewRef.current = view;
+
+    if (autoFocus) {
+      view.focus();
+    }
+
+    return () => {
+      view.destroy();
+      viewRef.current = null;
+    };
+  }, []);
+
+  // Update content when value changes externally (draft recovery)
+  useEffect(() => {
+    if (viewRef.current) {
+      const currentDoc = viewRef.current.state.doc.toString();
+      if (value !== currentDoc) {
+        viewRef.current.dispatch({
+          changes: {
+            from: 0,
+            to: viewRef.current.state.doc.length,
+            insert: value,
+          },
+        });
+      }
+    }
+  }, [value]);
+
+  // Update editable state
+  useEffect(() => {
+    if (viewRef.current) {
+      viewRef.current.dispatch({
+        effects: [],
+      });
+      viewRef.current.contentDOM.contentEditable = isSaving
+        ? "false"
+        : "true";
+    }
+  }, [isSaving]);
+
+  return (
+    <div
+      ref={containerRef}
+      className="flex-1 overflow-hidden cm-container"
+    />
+  );
+}

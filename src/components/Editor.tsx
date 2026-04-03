@@ -1,5 +1,6 @@
-import { useRef, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useDraftStore } from '../store/draft';
+import { MarkdownEditor } from './MarkdownEditor';
 
 interface EditorProps {
   onSave: (content: string) => void;
@@ -10,25 +11,25 @@ interface EditorProps {
 }
 
 export function Editor({ onSave, onSaved, isSaving, statusColor, statusText }: EditorProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [content, setContent] = useState('');
+  const contentRef = useRef(content);
   const { setDraft, clearDraft, recoverDraft } = useDraftStore();
   const autosaveIntervalRef = useRef<number | null>(null);
 
+  contentRef.current = content;
+
+  // Recover draft on mount
   useEffect(() => {
     const recovered = recoverDraft();
-    if (recovered && textareaRef.current) {
-      textareaRef.current.value = recovered.content;
-      textareaRef.current.focus();
-    } else if (textareaRef.current) {
-      textareaRef.current.focus();
+    if (recovered) {
+      setContent(recovered.content);
     }
   }, [recoverDraft]);
 
+  // Autosave draft every 2 seconds
   useEffect(() => {
     autosaveIntervalRef.current = window.setInterval(() => {
-      if (textareaRef.current) {
-        setDraft(textareaRef.current.value);
-      }
+      setDraft(contentRef.current);
     }, 2000);
 
     return () => {
@@ -38,41 +39,30 @@ export function Editor({ onSave, onSaved, isSaving, statusColor, statusText }: E
     };
   }, [setDraft]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-      e.preventDefault();
-      handleSave();
-    }
-  };
+  const handleChange = useCallback((value: string) => {
+    setContent(value);
+  }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setDraft(e.target.value);
-  };
-
-  const handleSave = async () => {
-    const content = textareaRef.current?.value || '';
+  const handleSave = useCallback(async () => {
+    const text = contentRef.current;
+    if (!text.trim()) return;
     try {
-      await onSave(content);
-      if (textareaRef.current) {
-        textareaRef.current.value = '';
-      }
+      await onSave(text);
+      setContent('');
       clearDraft();
     } catch {
       // Save failed — keep text in editor
     }
     onSaved();
-  };
+  }, [onSave, onSaved, clearDraft]);
 
   return (
-    <div className="flex flex-col flex-1 px-4 pt-3 pb-3 gap-2">
-      <textarea
-        ref={textareaRef}
+    <div className="flex flex-col flex-1 px-4 pt-3 pb-3 gap-2 min-h-0">
+      <MarkdownEditor
+        value={content}
         onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        placeholder="Start typing…"
-        className="flex-1 w-full bg-transparent text-argent-text font-mono text-sm leading-relaxed resize-none focus:outline-none placeholder:text-argent-text-muted/50"
-        disabled={isSaving}
-        autoFocus
+        onSave={handleSave}
+        isSaving={isSaving}
       />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
