@@ -5,9 +5,11 @@ interface EditorProps {
   onSave: (content: string) => void;
   onSaved: () => void;
   isSaving: boolean;
+  statusColor: string;
+  statusText: string;
 }
 
-export function Editor({ onSave, onSaved, isSaving }: EditorProps) {
+export function Editor({ onSave, onSaved, isSaving, statusColor, statusText }: EditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { setDraft, clearDraft, recoverDraft } = useDraftStore();
   const autosaveIntervalRef = useRef<number | null>(null);
@@ -72,7 +74,11 @@ export function Editor({ onSave, onSaved, isSaving }: EditorProps) {
         disabled={isSaving}
         autoFocus
       />
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${statusColor}`} />
+          <span className="text-xs text-argent-text-muted">{statusText}</span>
+        </div>
         <button
           onClick={handleSave}
           disabled={isSaving}

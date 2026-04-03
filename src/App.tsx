@@ -85,13 +85,15 @@ function App() {
 
   return (
     <div className="flex flex-col h-screen bg-argent-bg text-argent-text">
-      <TopBar
-        onSettingsClick={() => setShowSettings(true)}
+      <TopBar onSettingsClick={() => setShowSettings(true)} />
+
+      <Editor
+        onSave={handleSave}
+        onSaved={() => {}}
+        isSaving={status === 'Saving'}
         statusColor={displayColor}
         statusText={displayText}
       />
-
-      <Editor onSave={handleSave} onSaved={() => {}} isSaving={status === 'Saving'} />
 
       <RecentNotes />
 

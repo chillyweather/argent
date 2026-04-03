@@ -1,24 +1,14 @@
 import { useState } from 'react';
 import { useSettingsStore } from '../store/settings';
 import { invoke } from '@tauri-apps/api/core';
-import { getCurrentWindow } from '@tauri-apps/api/window';
 
 interface TopBarProps {
   onSettingsClick: () => void;
-  statusColor: string;
-  statusText: string;
 }
 
-export function TopBar({ onSettingsClick, statusColor, statusText }: TopBarProps) {
+export function TopBar({ onSettingsClick }: TopBarProps) {
   const { settings, updateSetting } = useSettingsStore();
   const [isPinning, setIsPinning] = useState(false);
-
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.button !== 0) return;
-    const target = e.target as HTMLElement;
-    if (target.closest('button')) return;
-    getCurrentWindow().startDragging();
-  };
 
   const handlePin = async () => {
     setIsPinning(true);
@@ -35,13 +25,10 @@ export function TopBar({ onSettingsClick, statusColor, statusText }: TopBarProps
 
   return (
     <div
-      onMouseDown={handleMouseDown}
-      className="flex items-center justify-between px-3 py-2.5 bg-argent-bg-secondary border-b border-argent-border select-none cursor-default"
+      data-tauri-drag-region
+      className="flex items-center justify-between pl-20 pr-3 py-2.5 select-none"
     >
-      <div className="flex items-center gap-2">
-        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${statusColor}`} />
-        <span className="text-xs text-argent-text-muted">{statusText}</span>
-      </div>
+      <div data-tauri-drag-region className="flex-1" />
       <div className="flex items-center gap-0.5">
         <button
           onClick={handlePin}
