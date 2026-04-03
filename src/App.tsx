@@ -7,18 +7,19 @@ import { RecentNotes } from './components/RecentNotes';
 import { SettingsPanel } from './components/SettingsPanel';
 import { useSettingsStore } from './store/settings';
 import { useStatusStore } from './store/status';
-import { getStatusColor, getStatusText } from './lib/status';
+import { getStatusColor, getStatusText, parseErrorStatus } from './lib/status';
 
 function App() {
   const [showSettings, setShowSettings] = useState(false);
   const { settings } = useSettingsStore();
   const { status, setStatus, setError } = useStatusStore();
   const [savedAnimation, setSavedAnimation] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!settings.sbUrl || !settings.sbToken) {
       setStatus('Config Missing');
-    } else {
+    } else if (status !== 'Saving' && status !== 'Saved') {
       setStatus('Ready');
     }
   }, [settings.sbUrl, settings.sbToken, setStatus]);
@@ -45,6 +46,7 @@ function App() {
 
       setStatus('Saved');
       setSavedAnimation(true);
+      setRefreshKey((k) => k + 1);
       setTimeout(() => {
         setSavedAnimation(false);
         setStatus('Ready');
@@ -56,11 +58,8 @@ function App() {
       }
     } catch (err) {
       const errorStr = String(err);
-      if (errorStr.includes('Unauthorized') || errorStr.includes('Auth')) {
-        setStatus('Auth Error');
-      } else {
-        setStatus('Server Error');
-      }
+      const errorStatus = parseErrorStatus(errorStr);
+      setStatus(errorStatus);
       setError(errorStr);
     }
   }, [settings, status, setStatus, setError]);
@@ -89,13 +88,12 @@ function App() {
 
       <Editor
         onSave={handleSave}
-        onSaved={() => {}}
         isSaving={status === 'Saving'}
         statusColor={displayColor}
         statusText={displayText}
       />
 
-      <RecentNotes />
+      <RecentNotes refreshKey={refreshKey} />
 
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
     </div>

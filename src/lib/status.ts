@@ -41,3 +41,16 @@ export function getStatusText(status: AppStatus): string {
       return status;
   }
 }
+
+export function parseErrorStatus(error: string): AppStatus {
+  if (error.includes('Network error')) {
+    return 'Offline';
+  }
+  if (error.includes('Auth') || error.includes('Unauthorized')) {
+    return 'Auth Error';
+  }
+  if (error.includes('Configuration missing')) {
+    return 'Config Missing';
+  }
+  return 'Server Error';
+}

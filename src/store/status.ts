@@ -13,6 +13,6 @@ export const useStatusStore = create<StatusStore>((set) => ({
   status: 'Ready',
   setStatus: (status) => set({ status, errorMessage: null }),
   errorMessage: null,
-  setError: (message) => set({ status: 'Server Error', errorMessage: message }),
+  setError: (message) => set({ errorMessage: message }),
   clearError: () => set({ errorMessage: null }),
 }));

@@ -2,15 +2,16 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useDraftStore } from '../store/draft';
 import { MarkdownEditor } from './MarkdownEditor';
 
+const isMac = /Mac/i.test(navigator.userAgent);
+
 interface EditorProps {
   onSave: (content: string) => void;
-  onSaved: () => void;
   isSaving: boolean;
   statusColor: string;
   statusText: string;
 }
 
-export function Editor({ onSave, onSaved, isSaving, statusColor, statusText }: EditorProps) {
+export function Editor({ onSave, isSaving, statusColor, statusText }: EditorProps) {
   const [content, setContent] = useState('');
   const contentRef = useRef(content);
   const { setDraft, clearDraft, recoverDraft } = useDraftStore();
@@ -18,7 +19,6 @@ export function Editor({ onSave, onSaved, isSaving, statusColor, statusText }: E
 
   contentRef.current = content;
 
-  // Recover draft on mount
   useEffect(() => {
     const recovered = recoverDraft();
     if (recovered) {
@@ -26,7 +26,6 @@ export function Editor({ onSave, onSaved, isSaving, statusColor, statusText }: E
     }
   }, [recoverDraft]);
 
-  // Autosave draft every 2 seconds
   useEffect(() => {
     autosaveIntervalRef.current = window.setInterval(() => {
       setDraft(contentRef.current);
@@ -53,8 +52,7 @@ export function Editor({ onSave, onSaved, isSaving, statusColor, statusText }: E
     } catch {
       // Save failed — keep text in editor
     }
-    onSaved();
-  }, [onSave, onSaved, clearDraft]);
+  }, [onSave, clearDraft]);
 
   return (
     <div className="flex flex-col flex-1 px-4 pt-3 pb-3 gap-2 min-h-0">
@@ -75,7 +73,7 @@ export function Editor({ onSave, onSaved, isSaving, statusColor, statusText }: E
           className="px-3 py-1.5 text-xs font-medium rounded border border-argent-border text-argent-text-muted hover:border-argent-text hover:text-argent-text transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {isSaving ? 'Saving…' : 'Save'}
-          <span className="ml-2 opacity-50">⌘↵</span>
+          <span className="ml-2 opacity-50">{isMac ? '⌘↵' : 'Ctrl↵'}</span>
         </button>
       </div>
     </div>

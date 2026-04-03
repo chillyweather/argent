@@ -14,20 +14,17 @@ export const useDraftStore = create<DraftStore>()(
     (set, get) => ({
       draft: {
         content: '',
-        lastUpdated: Date.now(),
       },
       setDraft: (content) =>
         set({
           draft: {
             content,
-            lastUpdated: Date.now(),
           },
         }),
       clearDraft: () =>
         set({
           draft: {
             content: '',
-            lastUpdated: Date.now(),
           },
         }),
       recoverDraft: () => {

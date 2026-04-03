@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useSettingsStore } from '../store/settings';
 import { invoke } from '@tauri-apps/api/core';
 
+const isMac = /Mac/i.test(navigator.userAgent);
+
 interface TopBarProps {
   onSettingsClick: () => void;
 }
@@ -26,7 +28,7 @@ export function TopBar({ onSettingsClick }: TopBarProps) {
   return (
     <div
       data-tauri-drag-region
-      className="flex items-center justify-between pl-20 pr-3 py-2.5 select-none"
+      className={`flex items-center justify-between ${isMac ? 'pl-20' : 'pl-3'} pr-3 py-2.5 select-none`}
     >
       <div data-tauri-drag-region className="flex-1" />
       <div className="flex items-center gap-0.5">

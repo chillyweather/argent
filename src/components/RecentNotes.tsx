@@ -6,10 +6,10 @@ import { RecentNote } from '../types';
 import { formatPath } from '../lib/path';
 
 interface RecentNotesProps {
-  onNotesFetched?: (notes: RecentNote[]) => void;
+  refreshKey?: number;
 }
 
-export function RecentNotes({ onNotesFetched }: RecentNotesProps) {
+export function RecentNotes({ refreshKey }: RecentNotesProps) {
   const { settings } = useSettingsStore();
   const [notes, setNotes] = useState<RecentNote[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +28,6 @@ export function RecentNotes({ onNotesFetched }: RecentNotesProps) {
         sbToken: settings.sbToken,
       });
       setNotes(result.notes);
-      onNotesFetched?.(result.notes);
     } catch {
       setError('Failed to fetch notes');
     } finally {
@@ -38,7 +37,7 @@ export function RecentNotes({ onNotesFetched }: RecentNotesProps) {
 
   useEffect(() => {
     fetchNotes();
-  }, [settings.sbUrl, settings.sbToken]);
+  }, [settings.sbUrl, settings.sbToken, refreshKey]);
 
   const handleOpenNote = async (url: string) => {
     try {

@@ -79,7 +79,7 @@ impl SbClient {
         let now = Local::now();
         let filename = match Self::extract_heading(content) {
             Some(heading) => heading,
-            None => now.format("%Y-%m-%d-%H%M%S-%f").to_string(),
+            None => now.format("%Y-%m-%d-%H%M%S-%3f").to_string(),
         };
         let path = format!(
             "Inbox/{}/{:02}/{}.md",
@@ -114,7 +114,7 @@ impl SbClient {
         let url = self.normalize_url("/v1/query");
         
         let query = QueryRequest {
-            query: "page where name =~ /^Inbox\\/ order by lastModified desc limit 5".to_string(),
+            query: "page where name =~ /^Inbox\\// order by lastModified desc limit 5".to_string(),
         };
 
         let response = self.client
@@ -139,10 +139,9 @@ impl SbClient {
         let query_result: QueryResponse = response.json().await?;
 
         let notes: Vec<RecentNote> = query_result.result.into_iter().map(|page| {
-            let name = page.name.clone();
-            let note_url = self.normalize_url(&name);
+            let note_url = self.normalize_url(&page.name);
             RecentNote {
-                name,
+                name: page.name.clone(),
                 path: page.name,
                 url: note_url,
                 last_modified: page.last_modified,

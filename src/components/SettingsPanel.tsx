@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { useSettingsStore } from '../store/settings';
 import { useStatusStore } from '../store/status';
+import { parseErrorStatus } from '../lib/status';
 
 interface SettingsPanelProps {
   onClose: () => void;
@@ -29,12 +30,9 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
       setTestResult({ success: true, message: result });
       setStatus('Ready');
     } catch (err) {
-      setTestResult({ success: false, message: String(err) });
-      if (String(err).includes('Unauthorized') || String(err).includes('Auth')) {
-        setStatus('Auth Error');
-      } else {
-        setStatus('Server Error');
-      }
+      const errorStr = String(err);
+      setTestResult({ success: false, message: errorStr });
+      setStatus(parseErrorStatus(errorStr));
     } finally {
       setTesting(false);
     }

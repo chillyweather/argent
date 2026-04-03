@@ -17,7 +17,6 @@ export interface Settings {
 
 export interface Draft {
   content: string;
-  lastUpdated: number;
 }
 
 export interface RecentNote {
@@ -25,13 +24,4 @@ export interface RecentNote {
   path: string;
   url: string;
   lastModified: number;
-}
-
-export interface SaveResult {
-  path: string;
-  url: string;
-}
-
-export interface RecentNotesResult {
-  notes: RecentNote[];
 }

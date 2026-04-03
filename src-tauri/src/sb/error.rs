@@ -1,28 +1,28 @@
-use thiserror::Error;
+use serde::Serialize;
 
-#[derive(Error, Debug)]
+#[derive(Debug, thiserror::Error, Serialize)]
 pub enum SbError {
     #[error("Network error: {0}")]
     Network(String),
-
     #[error("Authentication failed")]
     AuthFailed,
-
     #[error("Server error: {0}")]
     ServerError(String),
-
     #[error("Not found")]
     NotFound,
+    #[error("Configuration missing: {0}")]
+    ConfigMissing(String),
 }
 
 impl From<reqwest::Error> for SbError {
     fn from(err: reqwest::Error) -> Self {
-        if err.status() == Some(reqwest::StatusCode::UNAUTHORIZED) {
-            SbError::AuthFailed
-        } else if err.status() == Some(reqwest::StatusCode::NOT_FOUND) {
-            SbError::NotFound
-        } else {
-            SbError::Network(err.to_string())
+        if let Some(status) = err.status() {
+            if status == reqwest::StatusCode::UNAUTHORIZED {
+                return SbError::AuthFailed;
+            } else if status == reqwest::StatusCode::NOT_FOUND {
+                return SbError::NotFound;
+            }
         }
+        SbError::Network(err.to_string())
     }
 }
