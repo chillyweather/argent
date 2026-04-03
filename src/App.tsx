@@ -72,6 +72,10 @@ function App() {
         event.preventDefault();
         await appWindow.hide();
       });
+
+      if (settings.alwaysOnTop) {
+        await invoke('set_always_on_top', { alwaysOnTop: true });
+      }
     };
     setupWindow().catch(console.error);
   }, []);
