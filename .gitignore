@@ -1,0 +1,30 @@
+# Node
+node_modules/
+
+# Build
+dist/
+
+# Rust
+src-tauri/target/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tauri
+src-tauri/icons/*.png
+src-tauri/icons/*.ico
+src-tauri/icons/*.icns
+
+# Vite
+.vite/
+
+# Environment
+.env
+.env.local
