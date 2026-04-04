@@ -212,12 +212,48 @@ function buildDecorations(view: EditorView): DecorationSet {
         return;
       }
 
-      // List items
+      // List items (including checklists)
       if (name === "ListItem") {
         const line = state.doc.lineAt(from);
-        decorations.push(
-          Decoration.line({ class: "cm-list-item" }).range(line.from)
-        );
+        const lineText = line.text;
+
+        // Detect checklist: - [ ] or - [x] or * [X] or 1. [ ] etc.
+        const checklistMatch = lineText.match(/^(\s*[-*+]\s|\d+\.\s)\[([ xX])\]\s/);
+
+        if (checklistMatch) {
+          const markerText = checklistMatch[1]; // "- " or "1. " etc.
+          const checked = checklistMatch[2] !== ' ';
+          const checkboxStart = from + markerText.length;
+          const checkboxEnd = checkboxStart + 3; // "[ ]" or "[x]"
+          const markerEnd = from + checklistMatch[0].length;
+
+          // Hide list marker ("- " or "1. ")
+          if (!isCursorInRange(state, from, checkboxStart)) {
+            decorations.push(Decoration.replace({}).range(from, checkboxStart));
+          }
+
+          // Hide "[ ]" or "[x]" and replace with widget
+          if (!isCursorInRange(state, checkboxStart, checkboxEnd)) {
+            decorations.push(Decoration.replace({}).range(checkboxStart, checkboxEnd));
+            decorations.push(
+              Decoration.widget({
+                widget: new CheckboxWidget(checked, line.from),
+                side: -1,
+              }).range(from)
+            );
+          }
+
+          // Strikethrough for checked items
+          if (checked && !isCursorInRange(state, markerEnd, line.to)) {
+            decorations.push(
+              Decoration.line({ class: "cm-task-checked" }).range(line.from)
+            );
+          }
+        } else {
+          decorations.push(
+            Decoration.line({ class: "cm-list-item" }).range(line.from)
+          );
+        }
         return;
       }
     },
@@ -238,6 +274,61 @@ class HorizontalRuleWidget extends WidgetType {
   eq(other: HorizontalRuleWidget) {
     return other instanceof HorizontalRuleWidget;
   }
+}
+
+class CheckboxWidget extends WidgetType {
+  readonly checked: boolean;
+  readonly lineFrom: number;
+
+  constructor(checked: boolean, lineFrom: number) {
+    super();
+    this.checked = checked;
+    this.lineFrom = lineFrom;
+  }
+
+  toDOM(view: EditorView) {
+    const box = document.createElement("div");
+    box.className = this.checked ? "cm-checkbox cm-checkbox-checked" : "cm-checkbox cm-checkbox-unchecked";
+    box.setAttribute("contenteditable", "false");
+
+    if (this.checked) {
+      const check = document.createElement("span");
+      check.className = "cm-checkbox-mark";
+      check.textContent = "✓";
+      box.appendChild(check);
+    }
+
+    const lineFrom = this.lineFrom;
+    box.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const state = view.state;
+      const line = state.doc.lineAt(lineFrom);
+      const text = line.text;
+      const match = text.match(/^(\s*[-*+]\s|\d+\.\s)\[([ xX])\]/);
+      if (match) {
+        const openBracket = lineFrom + match[1].length;
+        const checked = match[2] !== ' ';
+        view.dispatch({
+          changes: {
+            from: openBracket + 1,
+            to: openBracket + 2,
+            insert: checked ? " " : "x",
+          },
+        });
+      }
+    });
+
+    return box;
+  }
+
+  eq(other: CheckboxWidget) {
+    return other instanceof CheckboxWidget
+      && other.checked === this.checked
+      && other.lineFrom === this.lineFrom;
+  }
+
+  ignoreEvent() { return true; }
 }
 
 export const livePreview = ViewPlugin.fromClass(

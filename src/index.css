@@ -179,6 +179,50 @@ body,
   padding-left: 1.2em;
 }
 
+/* Checklist */
+.cm-checkbox {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  margin-right: 0.35em;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  margin-top: -1px;
+  flex-shrink: 0;
+}
+
+.cm-checkbox-unchecked {
+  border: 1.5px solid var(--argent-border);
+  background: var(--argent-bg);
+}
+
+.cm-checkbox-unchecked:hover {
+  border-color: var(--argent-accent);
+}
+
+.cm-checkbox-checked {
+  border: 1.5px solid var(--argent-accent);
+  background: var(--argent-accent);
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cm-checkbox-mark {
+  font-size: 10px;
+  line-height: 1;
+  font-weight: bold;
+}
+
+.cm-task-checked {
+  text-decoration: line-through;
+  color: var(--argent-text-muted);
+}
+
 /* Horizontal rule */
 .cm-hr {
   border: none;
