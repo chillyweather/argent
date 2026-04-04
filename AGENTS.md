@@ -1,6 +1,6 @@
 # AGENTS.md — Argent
 
-Argent is a fast desktop scratchpad for SilverBullet, built with **Tauri v2** (Rust backend) + **React** + **TypeScript** + **Tailwind CSS** + **Zustand** for state.
+Argent is a fast desktop scratchpad for SilverBullet, built with **Tauri v2** (Rust backend) + **React** + **TypeScript** + **Tailwind CSS** + **Zustand** for state + **CodeMirror 6** with live WYSIWYG markdown preview.
 
 ## Build / Dev Commands
 
@@ -8,7 +8,7 @@ Argent is a fast desktop scratchpad for SilverBullet, built with **Tauri v2** (R
 |---|---|
 | `npm run dev` | Start Vite dev server (frontend only, port 1420) |
 | `npm run build` | Type-check (`tsc --noEmit`) then build frontend with Vite |
-| `cargo check` | Type-check Rust backend |
+| `cargo check` | Type-check Rust backend (`src-tauri/`) |
 | `cargo build` | Build Rust backend |
 | `npx tsc --noEmit` | TypeScript type-check only |
 | `npx vite build` | Frontend build only (no type-check) |
@@ -23,23 +23,21 @@ No test framework is configured on the frontend. No single-test commands exist y
 ```
 src/                          # React frontend
   App.tsx                     # Root: window setup, save orchestration, always-on-top restore
+  types.ts                    # Shared types: AppStatus, Settings, Draft
   components/
     Editor.tsx                # Content wrapper: local state, autosave draft, status footer
-    MarkdownEditor.tsx        # CodeMirror 6 wrapper: markdown language, WYSIWYG preview
-    TopBar.tsx                # Title bar: drag region, pin button, settings button
-    SettingsPanel.tsx         # Modal: SB URL, token, global shortcut, test connection
-    RecentNotes.tsx           # Recent SB notes as clickable chips
+    MarkdownEditor.tsx        # CodeMirror 6 wrapper: vim mode (Compartment), live preview
+    TopBar.tsx                # Title bar: drag region, open SB button, pin button, settings
+    SettingsPanel.tsx         # Modal: SB URL, token, vim toggle, test connection
   store/                      # Zustand stores with persist middleware
-    settings.ts               # Persisted (localStorage): SB config, always-on-top, etc.
+    settings.ts               # Persisted (localStorage): SB config, always-on-top, vimEnabled
     draft.ts                  # Persisted (localStorage): editor draft for crash recovery
-    status.ts                 # Volatile: app status + error message
+    status.ts                 # Volatile: app status + error message (setError only sets message)
   lib/
     status.ts                 # getStatusColor, getStatusText, parseErrorStatus
-    path.ts                   # formatPath utility
     codemirror/
-      live-preview.ts         # WYSIWYG markdown decorations (headings, bold, italic, etc.)
+      live-preview.ts         # WYSIWYG decorations: headings, bold, italic, links, code, checklists
       theme.ts                # CodeMirror base theme + highlight style
-  types.ts                    # Shared types: AppStatus, Settings, Draft, RecentNote
   index.css                   # Tailwind directives + CSS vars + CodeMirror overrides
 
 src-tauri/                    # Rust backend
@@ -49,14 +47,12 @@ src-tauri/                    # Rust backend
     commands/
       mod.rs                  # Module re-exports
       save.rs                 # save_to_sb, test_connection commands
-      recent.rs               # fetch_recent_notes command
-      window.rs               # set_always_on_top, show_and_focus commands
+      window.rs               # set_always_on_top (includes macOS fullScreenAuxiliary flag)
     sb/
       mod.rs                  # Module re-exports
-      client.rs               # SbClient: save_note, test_connection, fetch_recent_notes
+      client.rs               # SbClient: save_note, test_connection
       error.rs                # SbError enum (thiserror + Serialize)
-      models.rs               # QueryRequest, QueryResponse, PageInfo
-  tauri.conf.json             # Window config, permissions, bundle settings
+  tauri.conf.json             # Window config (visibleOnAllWorkspaces), bundle settings
   capabilities/default.json   # Tauri v2 ACL permissions
   Cargo.toml                  # Dependencies, release profile (LTO, strip, opt-level "s")
 ```
@@ -69,30 +65,32 @@ src-tauri/                    # Rust backend
 - **Props**: Define `interface` above the component. Export only the component, not the props interface.
 - **State**: Zustand stores in `src/store/`. Use `persist` middleware for data that survives restarts. Status store is intentionally volatile.
 - **Hooks**: Use `useCallback` for event handlers passed as props. Use refs (`useRef`) to avoid stale closures in async/callback contexts (see `MarkdownEditor.tsx`).
-- **Styling**: Tailwind only. Custom colors via CSS vars in `index.css`, mapped to `argent-*` tokens in `tailwind.config.js`. Use `bg-argent-bg`, `text-argent-text-muted`, etc.
+- **Styling**: Tailwind only. Custom colors via CSS vars in `index.css`, mapped to `argent-*` tokens in `tailwind.config.js`.
 - **No comments** unless explicitly asked. Code should be self-documenting.
 - **Platform detection**: Use `/Mac/i.test(navigator.userAgent)`, never deprecated `navigator.platform`.
-- **Tauri calls**: Import from `@tauri-apps/api/core` (`invoke`) and `@tauri-apps/api/window` (`getCurrentWindow`). Import plugins from `@tauri-apps/plugin-*`.
+- **Tauri calls**: Import `invoke` from `@tauri-apps/api/core`. Import window APIs from `@tauri-apps/api/window`. Import plugins from `@tauri-apps/plugin-*`.
 
 ## Code Style — Rust
 
 - **Edition**: 2021. Use `thiserror` for error enums, `serde` for serialization.
 - **Commands** (`#[tauri::command]`): Return `Result<T, SbError>`, never `Result<T, String>`. Validate inputs early, return `SbError::ConfigMissing` for missing config.
 - **Error types**: `SbError` derives both `thiserror::Error` and `serde::Serialize`. Each variant has a display message via `#[error(...)]`.
-- **Naming**: Snake case for functions/variables. Pascal case for types. Tauri command names use snake_case (`save_to_sb`, `test_connection`).
+- **Naming**: Snake case for functions/variables. Pascal case for types. Tauri command names use snake_case (`save_to_sb`, `set_always_on_top`).
 - **Async**: Commands are `async`. Use `reqwest::Client` for HTTP. `tokio` is the runtime.
 - **Imports**: Group std → external crates → crate-internal. No `use super::*`.
+- **macOS native APIs**: Use `objc2` crate + `msg_send!` macro. Access `NSWindow` via `raw_window_handle` → `AppKitWindowHandle.ns_view` → `[ns_view window]`.
 
 ## Error Handling
 
 - **Rust side**: `SbError` enum covers Network, AuthFailed, ServerError, NotFound, ConfigMissing. The `From<reqwest::Error>` impl maps HTTP statuses to variants.
-- **Frontend side**: `parseErrorStatus(error: string)` in `src/lib/status.ts` maps error strings to `AppStatus` values. Always set status before calling `setError()`. The status store's `setError` only sets the error message, not the status.
+- **Frontend side**: `parseErrorStatus(error: string)` in `src/lib/status.ts` maps error strings to `AppStatus`. Callers set status explicitly before calling `setError()` (which only sets the message).
 - **Transient states**: The `useEffect` in `App.tsx` that syncs config → status must skip overwriting `Saving` and `Saved` states.
 
 ## Key Conventions
 
 - **Draft persistence**: Never clear draft before confirmed save success. Draft recovers on app restart via Zustand persist.
-- **Recent notes refresh**: `RecentNotes` receives a `refreshKey` prop. Increment it after successful save.
 - **Window close**: `onCloseRequested` prevents default and hides the window instead (macOS dock behavior).
-- **Always-on-top**: Restored from persisted settings on app startup. Toggle via `invoke('set_always_on_top')`.
-- **Save shortcut**: `Mod-Enter` in CodeMirror. Display label is platform-conditional (`⌘↵` vs `Ctrl↵`).
+- **Always-on-top**: Restored from persisted settings on startup. Toggle via `invoke('set_always_on_top')`. Also sets `visibleOnAllWorkspaces` and macOS `canJoinAllSpaces` flag with `NSPopUpMenuWindowLevel` (100). Avoids `fullScreenAuxiliary` to keep the window visible in Mission Control.
+- **Save shortcut**: `Mod-Enter` handled via native DOM `keydown` listener on the editor (bypasses CodeMirror keymaps and vim). Display label is platform-conditional (`⌘↵` vs `Ctrl↵`).
+- **Vim mode**: Toggleable via `Compartment` in `MarkdownEditor.tsx`. `@replit/codemirror-vim` placed before other keymaps. Setting persists in Zustand.
+- **Live preview**: CodeMirror decorations hide markdown markers and apply CSS. Markers reappear when cursor enters the range. Checklist items toggle `[ ]` ↔ `[x]` via click on checkbox widget.

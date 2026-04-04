@@ -26,7 +26,8 @@
         "transparent": false,
         "center": true,
         "visible": true,
-        "focus": true
+        "focus": true,
+        "visibleOnAllWorkspaces": true
       }
     ],
     "security": {

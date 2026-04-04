@@ -57,19 +57,20 @@ function App() {
   }, [settings, status, setStatus, setError]);
 
   useEffect(() => {
-    const setupWindow = async () => {
-      const appWindow = getCurrentWindow();
-      appWindow.onCloseRequested(async (event) => {
-        event.preventDefault();
-        await appWindow.hide();
-      });
+    const appWindow = getCurrentWindow();
+    const unlisten = appWindow.onCloseRequested(async (event) => {
+      event.preventDefault();
+      await appWindow.hide();
+    });
 
-      if (settings.alwaysOnTop) {
-        await invoke('set_always_on_top', { alwaysOnTop: true });
-      }
+    return () => {
+      unlisten.then((cleanup) => cleanup()).catch(console.error);
     };
-    setupWindow().catch(console.error);
   }, []);
+
+  useEffect(() => {
+    invoke('set_always_on_top', { alwaysOnTop: settings.alwaysOnTop }).catch(console.error);
+  }, [settings.alwaysOnTop]);
 
   const displayText = savedAnimation ? 'Saved' : getStatusText(status);
   const displayColor = savedAnimation ? 'bg-green-400' : getStatusColor(status);

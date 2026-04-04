@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useSettingsStore } from '../store/settings';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-shell';
+import { useSettingsStore } from '../store/settings';
+import { useStatusStore } from '../store/status';
 
 const isMac = /Mac/i.test(navigator.userAgent);
 
@@ -11,15 +12,17 @@ interface TopBarProps {
 
 export function TopBar({ onSettingsClick }: TopBarProps) {
   const { settings, updateSetting } = useSettingsStore();
+  const { setError } = useStatusStore();
   const [isPinning, setIsPinning] = useState(false);
 
   const handlePin = async () => {
     setIsPinning(true);
     try {
       const newValue = !settings.alwaysOnTop;
-      updateSetting('alwaysOnTop', newValue);
       await invoke('set_always_on_top', { alwaysOnTop: newValue });
+      updateSetting('alwaysOnTop', newValue);
     } catch (error) {
+      setError(String(error));
       console.error('Failed to set always on top:', error);
     } finally {
       setIsPinning(false);
