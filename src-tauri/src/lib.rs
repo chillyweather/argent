@@ -1,7 +1,7 @@
 mod commands;
 mod sb;
 
-use commands::{recent, save, window};
+use commands::{save, window};
 use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder};
 use tauri::Manager;
 
@@ -12,7 +12,6 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             save::save_to_sb,
             save::test_connection,
-            recent::fetch_recent_notes,
             window::set_always_on_top,
             window::show_and_focus,
         ])

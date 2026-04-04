@@ -31,6 +31,8 @@
     "core:image:default",
     "core:resources:default",
     "core:menu:default",
-    "core:tray:default"
+    "core:tray:default",
+    "shell:default",
+    "shell:allow-open"
   ]
 }

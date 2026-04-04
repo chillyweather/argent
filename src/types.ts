@@ -17,10 +17,3 @@ export interface Settings {
 export interface Draft {
   content: string;
 }
-
-export interface RecentNote {
-  name: string;
-  path: string;
-  url: string;
-  lastModified: number;
-}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSettingsStore } from '../store/settings';
 import { invoke } from '@tauri-apps/api/core';
+import { open } from '@tauri-apps/plugin-shell';
 
 const isMac = /Mac/i.test(navigator.userAgent);
 
@@ -25,6 +26,12 @@ export function TopBar({ onSettingsClick }: TopBarProps) {
     }
   };
 
+  const handleOpenSB = async () => {
+    if (settings.sbUrl) {
+      await open(settings.sbUrl);
+    }
+  };
+
   return (
     <div
       data-tauri-drag-region
@@ -32,6 +39,28 @@ export function TopBar({ onSettingsClick }: TopBarProps) {
     >
       <div data-tauri-drag-region className="flex-1" />
       <div className="flex items-center gap-0.5">
+        <button
+          onClick={handleOpenSB}
+          disabled={!settings.sbUrl}
+          className="p-1.5 rounded text-argent-text-muted hover:bg-argent-bg hover:text-argent-text transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          title="Open SilverBullet"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M15 3h6v6" />
+            <path d="M10 14 21 3" />
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+          </svg>
+        </button>
         <button
           onClick={handlePin}
           disabled={isPinning}

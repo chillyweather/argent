@@ -3,7 +3,6 @@ import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { TopBar } from './components/TopBar';
 import { Editor } from './components/Editor';
-import { RecentNotes } from './components/RecentNotes';
 import { SettingsPanel } from './components/SettingsPanel';
 import { useSettingsStore } from './store/settings';
 import { useStatusStore } from './store/status';
@@ -14,7 +13,6 @@ function App() {
   const { settings } = useSettingsStore();
   const { status, setStatus, setError } = useStatusStore();
   const [savedAnimation, setSavedAnimation] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!settings.sbUrl || !settings.sbToken) {
@@ -46,7 +44,6 @@ function App() {
 
       setStatus('Saved');
       setSavedAnimation(true);
-      setRefreshKey((k) => k + 1);
       setTimeout(() => {
         setSavedAnimation(false);
         setStatus('Ready');
@@ -88,8 +85,6 @@ function App() {
         statusText={displayText}
         vimEnabled={settings.vimEnabled}
       />
-
-      <RecentNotes refreshKey={refreshKey} />
 
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
     </div>

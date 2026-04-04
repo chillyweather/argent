@@ -1,9 +1,7 @@
 use chrono::Local;
 use reqwest::Client;
 use crate::sb::error::SbError;
-use crate::sb::models::{QueryRequest, QueryResponse};
 use crate::commands::save::SaveResult;
-use crate::commands::recent::RecentNote;
 
 pub struct SbClient {
     base_url: String,
@@ -108,46 +106,5 @@ impl SbClient {
         } else {
             Err(SbError::ServerError(format!("Status: {}", response.status())))
         }
-    }
-
-    pub async fn fetch_recent_notes(&self) -> Result<Vec<RecentNote>, SbError> {
-        let url = self.normalize_url("/v1/query");
-        
-        let query = QueryRequest {
-            query: "page where name =~ /^Inbox\\// order by lastModified desc limit 5".to_string(),
-        };
-
-        let response = self.client
-            .post(&url)
-            .header("Authorization", format!("Bearer {}", self.token))
-            .header("Content-Type", "application/json")
-            .json(&query)
-            .send()
-            .await?;
-
-        if response.status() == reqwest::StatusCode::NOT_FOUND {
-            return Ok(vec![]);
-        }
-
-        if !response.status().is_success() {
-            if response.status() == reqwest::StatusCode::UNAUTHORIZED {
-                return Err(SbError::AuthFailed);
-            }
-            return Err(SbError::ServerError(format!("Status: {}", response.status())));
-        }
-
-        let query_result: QueryResponse = response.json().await?;
-
-        let notes: Vec<RecentNote> = query_result.result.into_iter().map(|page| {
-            let note_url = self.normalize_url(&page.name);
-            RecentNote {
-                name: page.name.clone(),
-                path: page.name,
-                url: note_url,
-                last_modified: page.last_modified,
-            }
-        }).collect();
-
-        Ok(notes)
     }
 }
