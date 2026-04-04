@@ -51,11 +51,6 @@ function App() {
         setSavedAnimation(false);
         setStatus('Ready');
       }, 2000);
-
-      if (settings.hideAfterSave) {
-        const appWindow = getCurrentWindow();
-        await appWindow.hide();
-      }
     } catch (err) {
       const errorStr = String(err);
       const errorStatus = parseErrorStatus(errorStr);
@@ -91,6 +86,7 @@ function App() {
         isSaving={status === 'Saving'}
         statusColor={displayColor}
         statusText={displayText}
+        vimEnabled={settings.vimEnabled}
       />
 
       <RecentNotes refreshKey={refreshKey} />

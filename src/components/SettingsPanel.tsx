@@ -100,33 +100,17 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
             />
           </div>
 
-          <div>
-            <label className="block text-xs text-argent-text-muted mb-1">
-              Global Shortcut
-            </label>
-            <input
-              type="text"
-              value={settings.globalShortcut}
-              onChange={(e) => updateSetting('globalShortcut', e.target.value)}
-              placeholder="Cmd+Shift+Space"
-              className="w-full px-3 py-2 bg-argent-bg-secondary border border-argent-border rounded text-sm text-argent-text focus:outline-none focus:ring-2 focus:ring-argent-accent focus:border-transparent"
-            />
-            <p className="text-xs text-argent-text-muted mt-1">
-              Format: Cmd/Ctrl + Shift + Key
-            </p>
-          </div>
-
           <div className="flex items-center justify-between">
-            <label className="text-sm text-argent-text">Hide after save</label>
+            <label className="text-sm text-argent-text">Vim mode</label>
             <button
-              onClick={() => updateSetting('hideAfterSave', !settings.hideAfterSave)}
+              onClick={() => updateSetting('vimEnabled', !settings.vimEnabled)}
               className={`w-10 h-6 rounded-full transition-colors ${
-                settings.hideAfterSave ? 'bg-argent-accent' : 'bg-argent-bg-secondary'
+                settings.vimEnabled ? 'bg-argent-accent' : 'bg-argent-bg-secondary'
               }`}
             >
               <div
                 className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                  settings.hideAfterSave ? 'translate-x-5' : 'translate-x-1'
+                  settings.vimEnabled ? 'translate-x-5' : 'translate-x-1'
                 }`}
               />
             </button>

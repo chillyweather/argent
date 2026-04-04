@@ -9,9 +9,10 @@ interface EditorProps {
   isSaving: boolean;
   statusColor: string;
   statusText: string;
+  vimEnabled: boolean;
 }
 
-export function Editor({ onSave, isSaving, statusColor, statusText }: EditorProps) {
+export function Editor({ onSave, isSaving, statusColor, statusText, vimEnabled }: EditorProps) {
   const [content, setContent] = useState('');
   const contentRef = useRef(content);
   const { setDraft, clearDraft, recoverDraft } = useDraftStore();
@@ -61,6 +62,7 @@ export function Editor({ onSave, isSaving, statusColor, statusText }: EditorProp
         onChange={handleChange}
         onSave={handleSave}
         isSaving={isSaving}
+        vimEnabled={vimEnabled}
       />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">

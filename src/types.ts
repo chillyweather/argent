@@ -10,9 +10,8 @@ export type AppStatus =
 export interface Settings {
   sbUrl: string;
   sbToken: string;
-  globalShortcut: string;
   alwaysOnTop: boolean;
-  hideAfterSave: boolean;
+  vimEnabled: boolean;
 }
 
 export interface Draft {

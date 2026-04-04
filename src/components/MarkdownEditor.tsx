@@ -1,10 +1,13 @@
 import { useRef, useEffect, useCallback } from "react";
 import { EditorView, keymap, placeholder } from "@codemirror/view";
-import { EditorState } from "@codemirror/state";
+import { EditorState, Compartment } from "@codemirror/state";
 import { markdown } from "@codemirror/lang-markdown";
 import { defaultKeymap, history } from "@codemirror/commands";
+import { vim } from "@replit/codemirror-vim";
 import { editorTheme } from "../lib/codemirror/theme";
 import { livePreview } from "../lib/codemirror/live-preview";
+
+const vimCompartment = new Compartment();
 
 interface MarkdownEditorProps {
   value: string;
@@ -12,6 +15,7 @@ interface MarkdownEditorProps {
   onSave: () => void;
   isSaving?: boolean;
   autoFocus?: boolean;
+  vimEnabled?: boolean;
 }
 
 export function MarkdownEditor({
@@ -20,6 +24,7 @@ export function MarkdownEditor({
   onSave,
   isSaving = false,
   autoFocus = true,
+  vimEnabled = false,
 }: MarkdownEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -43,6 +48,7 @@ export function MarkdownEditor({
     const state = EditorState.create({
       doc: value,
       extensions: [
+        vimCompartment.of(vimEnabled ? vim() : []),
         history(),
         markdown(),
         keymap.of([
@@ -106,6 +112,15 @@ export function MarkdownEditor({
         : "true";
     }
   }, [isSaving]);
+
+  // Toggle vim mode
+  useEffect(() => {
+    if (viewRef.current) {
+      viewRef.current.dispatch({
+        effects: vimCompartment.reconfigure(vimEnabled ? vim() : []),
+      });
+    }
+  }, [vimEnabled]);
 
   return (
     <div

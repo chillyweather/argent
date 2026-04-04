@@ -11,9 +11,8 @@ interface SettingsStore {
 const defaultSettings: Settings = {
   sbUrl: '',
   sbToken: '',
-  globalShortcut: /Mac/i.test(navigator.userAgent) ? 'Cmd+Shift+Space' : 'Ctrl+Shift+Space',
   alwaysOnTop: false,
-  hideAfterSave: true,
+  vimEnabled: false,
 };
 
 export const useSettingsStore = create<SettingsStore>()(
