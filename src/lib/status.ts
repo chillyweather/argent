@@ -3,21 +3,16 @@ import { AppStatus } from '../types';
 export function getStatusColor(status: AppStatus): string {
   switch (status) {
     case 'Ready':
-      return 'bg-gray-400';
-    case 'Saving':
-      return 'bg-blue-400';
     case 'Saved':
+    case 'Saving':
       return 'bg-green-400';
     case 'Offline':
-      return 'bg-orange-400';
     case 'Auth Error':
-      return 'bg-red-400';
     case 'Server Error':
-      return 'bg-red-400';
     case 'Config Missing':
-      return 'bg-yellow-400';
+      return 'bg-red-400';
     default:
-      return 'bg-gray-400';
+      return 'bg-green-400';
   }
 }
 

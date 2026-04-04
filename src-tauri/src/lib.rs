@@ -5,6 +5,11 @@ use commands::{save, window};
 use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder};
 use tauri::Manager;
 
+#[cfg(target_os = "macos")]
+use cocoa::appkit::{NSWindow, NSWindowCollectionBehavior};
+#[cfg(target_os = "macos")]
+use cocoa::base::id;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -50,6 +55,22 @@ pub fn run() {
                     }
                 }
             });
+
+            #[cfg(target_os = "macos")]
+            {
+                if let Some(window) = app.get_webview_window("main") {
+                    let ns_window = window.ns_window().unwrap() as id;
+                    unsafe {
+                        ns_window.setLevel_(8);
+
+                        let behavior =
+                            NSWindowCollectionBehavior::NSWindowCollectionBehaviorCanJoinAllSpaces
+                                | NSWindowCollectionBehavior::NSWindowCollectionBehaviorFullScreenAuxiliary
+                                | NSWindowCollectionBehavior::NSWindowCollectionBehaviorManaged;
+                        ns_window.setCollectionBehavior_(behavior);
+                    }
+                }
+            }
 
             Ok(())
         })

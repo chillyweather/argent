@@ -78,7 +78,7 @@ src-tauri/                    # Rust backend
 - **Naming**: Snake case for functions/variables. Pascal case for types. Tauri command names use snake_case (`save_to_sb`, `set_always_on_top`).
 - **Async**: Commands are `async`. Use `reqwest::Client` for HTTP. `tokio` is the runtime.
 - **Imports**: Group std → external crates → crate-internal. No `use super::*`.
-- **macOS native APIs**: Use `objc2` crate + `msg_send!` macro. Access `NSWindow` via `raw_window_handle` → `AppKitWindowHandle.ns_view` → `[ns_view window]`.
+- **macOS native APIs**: Use `cocoa` crate + `NSWindow` trait. Access `NSWindow` via `window.ns_window()? as id`.
 
 ## Error Handling
 
@@ -90,7 +90,7 @@ src-tauri/                    # Rust backend
 
 - **Draft persistence**: Never clear draft before confirmed save success. Draft recovers on app restart via Zustand persist.
 - **Window close**: `onCloseRequested` prevents default and hides the window instead (macOS dock behavior).
-- **Always-on-top**: Restored from persisted settings on startup. Toggle via `invoke('set_always_on_top')`. Also sets `visibleOnAllWorkspaces` and macOS `canJoinAllSpaces` flag with `NSPopUpMenuWindowLevel` (100). Avoids `fullScreenAuxiliary` to keep the window visible in Mission Control.
+- **Always-on-top**: Restored from persisted settings on startup. Toggle via `invoke('set_always_on_top')`. On macOS: uses `cocoa` crate to set `NSWindow` level (8) and collection behavior (`CanJoinAllSpaces | FullScreenAuxiliary | Managed`). `FullScreenAuxiliary` enables floating over fullscreen apps; `Managed` keeps the window visible in Mission Control.
 - **Save shortcut**: `Mod-Enter` handled via native DOM `keydown` listener on the editor (bypasses CodeMirror keymaps and vim). Display label is platform-conditional (`⌘↵` vs `Ctrl↵`).
 - **Vim mode**: Toggleable via `Compartment` in `MarkdownEditor.tsx`. `@replit/codemirror-vim` placed before other keymaps. Setting persists in Zustand.
 - **Live preview**: CodeMirror decorations hide markdown markers and apply CSS. Markers reappear when cursor enters the range. Checklist items toggle `[ ]` ↔ `[x]` via click on checkbox widget.

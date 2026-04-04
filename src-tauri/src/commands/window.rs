@@ -41,34 +41,22 @@ fn apply_macos_float(window: &WebviewWindow, enable: bool) -> Result<(), String>
 
 #[cfg(target_os = "macos")]
 fn configure_macos_float(window: &WebviewWindow, enable: bool) -> Result<(), String> {
-    use objc2::msg_send;
-    use raw_window_handle::{HasWindowHandle, RawWindowHandle};
+    use cocoa::appkit::{NSWindow, NSWindowCollectionBehavior};
+    use cocoa::base::id;
 
-    let handle = window.window_handle().map_err(|e| e.to_string())?;
-    let RawWindowHandle::AppKit(ah) = handle.as_raw() else {
-        return Err("unsupported macOS window handle".to_string());
-    };
-
-    let ns_view = ah.ns_view.as_ptr() as *mut objc2::runtime::AnyObject;
+    let ns_window = window.ns_window().map_err(|e| e.to_string())? as id;
     unsafe {
-        let ns_window: *mut objc2::runtime::AnyObject = msg_send![ns_view, window];
-        if ns_window.is_null() {
-            return Err("failed to access NSWindow".to_string());
-        }
+        let level: i64 = if enable { 8 } else { 0 };
+        ns_window.setLevel_(level);
 
-        // NSPopUpMenuWindowLevel = 100 floats above fullscreen apps (~24–25).
-        // Do NOT set fullScreenAuxiliary — it hides the window from Mission Control.
-        let level: isize = if enable { 100 } else { 0 };
-        let _: () = msg_send![ns_window, setLevel: level];
-
-        let current: usize = msg_send![ns_window, collectionBehavior];
-        // canJoinAllSpaces = 1 << 0 = 1
-        let new_behavior = if enable {
-            current | 1
+        let behavior = if enable {
+            NSWindowCollectionBehavior::NSWindowCollectionBehaviorCanJoinAllSpaces
+                | NSWindowCollectionBehavior::NSWindowCollectionBehaviorFullScreenAuxiliary
+                | NSWindowCollectionBehavior::NSWindowCollectionBehaviorManaged
         } else {
-            current & !1
+            NSWindowCollectionBehavior::NSWindowCollectionBehaviorManaged
         };
-        let _: () = msg_send![ns_window, setCollectionBehavior: new_behavior];
+        ns_window.setCollectionBehavior_(behavior);
     }
 
     Ok(())

@@ -229,3 +229,13 @@ body,
   border-top: 1px solid var(--argent-border);
   margin: 0.5em 0;
 }
+
+/* Status indicator blink */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.animate-blink {
+  animation: blink 0.8s ease-in-out infinite;
+}

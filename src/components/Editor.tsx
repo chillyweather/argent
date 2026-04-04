@@ -8,11 +8,10 @@ interface EditorProps {
   onSave: (content: string) => void;
   isSaving: boolean;
   statusColor: string;
-  statusText: string;
   vimEnabled: boolean;
 }
 
-export function Editor({ onSave, isSaving, statusColor, statusText, vimEnabled }: EditorProps) {
+export function Editor({ onSave, isSaving, statusColor, vimEnabled }: EditorProps) {
   const [content, setContent] = useState('');
   const contentRef = useRef(content);
   const { setDraft, clearDraft, recoverDraft } = useDraftStore();
@@ -65,10 +64,7 @@ export function Editor({ onSave, isSaving, statusColor, statusText, vimEnabled }
         vimEnabled={vimEnabled}
       />
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${statusColor}`} />
-          <span className="text-xs text-argent-text-muted">{statusText}</span>
-        </div>
+        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${statusColor} ${isSaving ? 'animate-blink' : ''}`} />
         <button
           onClick={handleSave}
           disabled={isSaving}

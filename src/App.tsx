@@ -6,7 +6,7 @@ import { Editor } from './components/Editor';
 import { SettingsPanel } from './components/SettingsPanel';
 import { useSettingsStore } from './store/settings';
 import { useStatusStore } from './store/status';
-import { getStatusColor, getStatusText, parseErrorStatus } from './lib/status';
+import { getStatusColor, parseErrorStatus } from './lib/status';
 
 function App() {
   const [showSettings, setShowSettings] = useState(false);
@@ -72,7 +72,6 @@ function App() {
     invoke('set_always_on_top', { alwaysOnTop: settings.alwaysOnTop }).catch(console.error);
   }, [settings.alwaysOnTop]);
 
-  const displayText = savedAnimation ? 'Saved' : getStatusText(status);
   const displayColor = savedAnimation ? 'bg-green-400' : getStatusColor(status);
 
   return (
@@ -83,7 +82,6 @@ function App() {
         onSave={handleSave}
         isSaving={status === 'Saving'}
         statusColor={displayColor}
-        statusText={displayText}
         vimEnabled={settings.vimEnabled}
       />
 
