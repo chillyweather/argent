@@ -80,6 +80,7 @@ function App() {
         isSaving={status === 'Saving'}
         statusColor={displayColor}
         vimEnabled={settings.vimEnabled}
+        livePreviewEnabled={settings.livePreviewEnabled}
       />
 
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}

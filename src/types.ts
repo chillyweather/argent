@@ -12,6 +12,7 @@ export interface Settings {
   sbToken: string;
   alwaysOnTop: boolean;
   vimEnabled: boolean;
+  livePreviewEnabled: boolean;
 }
 
 export interface Draft {

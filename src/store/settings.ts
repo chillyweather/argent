@@ -13,6 +13,7 @@ const defaultSettings: Settings = {
   sbToken: '',
   alwaysOnTop: false,
   vimEnabled: false,
+  livePreviewEnabled: true,
 };
 
 export const useSettingsStore = create<SettingsStore>()(

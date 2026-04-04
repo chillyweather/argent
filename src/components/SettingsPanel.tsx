@@ -116,6 +116,22 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
             </button>
           </div>
 
+          <div className="flex items-center justify-between">
+            <label className="text-sm text-argent-text">Live preview</label>
+            <button
+              onClick={() => updateSetting('livePreviewEnabled', !settings.livePreviewEnabled)}
+              className={`w-10 h-6 rounded-full transition-colors ${
+                settings.livePreviewEnabled ? 'bg-argent-accent' : 'bg-argent-bg-secondary'
+              }`}
+            >
+              <div
+                className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                  settings.livePreviewEnabled ? 'translate-x-5' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+
           <button
             onClick={handleTestConnection}
             disabled={testing}

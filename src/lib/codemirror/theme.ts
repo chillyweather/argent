@@ -5,13 +5,12 @@ import { tags } from "@lezer/highlight";
 const baseTheme = EditorView.theme({
   "&": {
     height: "100%",
-    fontSize: "14px",
+    fontSize: "16px",
     backgroundColor: "transparent",
     color: "var(--argent-text)",
   },
   ".cm-scroller": {
-    fontFamily:
-      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+    fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
     overflow: "auto",
   },
   ".cm-content": {

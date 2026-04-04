@@ -8,6 +8,7 @@ import { editorTheme } from "../lib/codemirror/theme";
 import { livePreview } from "../lib/codemirror/live-preview";
 
 const vimCompartment = new Compartment();
+const livePreviewCompartment = new Compartment();
 
 interface MarkdownEditorProps {
   value: string;
@@ -16,6 +17,7 @@ interface MarkdownEditorProps {
   isSaving?: boolean;
   autoFocus?: boolean;
   vimEnabled?: boolean;
+  livePreviewEnabled?: boolean;
 }
 
 export function MarkdownEditor({
@@ -25,6 +27,7 @@ export function MarkdownEditor({
   isSaving = false,
   autoFocus = true,
   vimEnabled = false,
+  livePreviewEnabled = true,
 }: MarkdownEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -57,7 +60,7 @@ export function MarkdownEditor({
         ]),
         EditorView.lineWrapping,
         editorTheme,
-        livePreview,
+        livePreviewCompartment.of(livePreviewEnabled ? livePreview : []),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             onChangeRef.current(update.state.doc.toString());
@@ -133,6 +136,15 @@ export function MarkdownEditor({
       });
     }
   }, [vimEnabled]);
+
+  // Toggle live preview
+  useEffect(() => {
+    if (viewRef.current) {
+      viewRef.current.dispatch({
+        effects: livePreviewCompartment.reconfigure(livePreviewEnabled ? livePreview : []),
+      });
+    }
+  }, [livePreviewEnabled]);
 
   return (
     <div
