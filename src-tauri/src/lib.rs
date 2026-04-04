@@ -24,11 +24,18 @@ pub fn run() {
             let open_window = MenuItemBuilder::with_id("open_window", "Open Window")
                 .accelerator("CmdOrCtrl+N")
                 .build(app)?;
+            let dev_tools = MenuItemBuilder::with_id("dev_tools", "Open Dev Tools")
+                .accelerator("CmdOrCtrl+Option+I")
+                .build(app)?;
 
             let file_menu = SubmenuBuilder::new(app, "File")
                 .item(&open_window)
                 .separator()
                 .item(&PredefinedMenuItem::quit(app, None)?)
+                .build()?;
+
+            let develop_menu = SubmenuBuilder::new(app, "Develop")
+                .item(&dev_tools)
                 .build()?;
 
             let edit_menu = SubmenuBuilder::new(app, "Edit")
@@ -44,6 +51,7 @@ pub fn run() {
             let menu = MenuBuilder::new(app)
                 .item(&file_menu)
                 .item(&edit_menu)
+                .item(&develop_menu)
                 .build()?;
 
             app.set_menu(menu)?;
@@ -52,6 +60,10 @@ pub fn run() {
                     if let Some(window) = app_handle.get_webview_window("main") {
                         let _ = window.show();
                         let _ = window.set_focus();
+                    }
+                } else if event.id() == dev_tools.id() {
+                    if let Some(window) = app_handle.get_webview_window("main") {
+                        window.open_devtools();
                     }
                 }
             });

@@ -230,7 +230,15 @@ body,
   margin: 0.5em 0;
 }
 
-/* Status indicator blink */
+/* Vim mode block cursor */
+.cm-fat-cursor {
+  background-color: rgba(249, 115, 22, 0.85) !important;
+  color: transparent !important;
+}
+
+.cm-fat-cursor-mark {
+  color: transparent !important;
+}
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }

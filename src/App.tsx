@@ -12,7 +12,6 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const { settings } = useSettingsStore();
   const { status, setStatus, setError } = useStatusStore();
-  const [savedAnimation, setSavedAnimation] = useState(false);
 
   useEffect(() => {
     if (!settings.sbUrl || !settings.sbToken) {
@@ -43,9 +42,7 @@ function App() {
       });
 
       setStatus('Saved');
-      setSavedAnimation(true);
       setTimeout(() => {
-        setSavedAnimation(false);
         setStatus('Ready');
       }, 2000);
     } catch (err) {
@@ -72,7 +69,7 @@ function App() {
     invoke('set_always_on_top', { alwaysOnTop: settings.alwaysOnTop }).catch(console.error);
   }, [settings.alwaysOnTop]);
 
-  const displayColor = savedAnimation ? 'bg-green-400' : getStatusColor(status);
+  const displayColor = getStatusColor(status);
 
   return (
     <div className="flex flex-col h-screen bg-argent-bg text-argent-text">

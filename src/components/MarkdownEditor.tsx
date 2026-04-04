@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback } from "react";
-import { EditorView, keymap, placeholder } from "@codemirror/view";
+import { EditorView, keymap } from "@codemirror/view";
 import { EditorState, Compartment } from "@codemirror/state";
 import { markdown } from "@codemirror/lang-markdown";
 import { defaultKeymap, history } from "@codemirror/commands";
@@ -56,7 +56,6 @@ export function MarkdownEditor({
           { key: "Mod-Enter", run: handleSave },
         ]),
         EditorView.lineWrapping,
-        placeholder("Start typing…"),
         editorTheme,
         livePreview,
         EditorView.updateListener.of((update) => {

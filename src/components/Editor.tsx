@@ -64,7 +64,11 @@ export function Editor({ onSave, isSaving, statusColor, vimEnabled }: EditorProp
         vimEnabled={vimEnabled}
       />
       <div className="flex items-center justify-between">
-        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${statusColor} ${isSaving ? 'animate-blink' : ''}`} />
+        <div>
+          {statusColor && (
+            <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${statusColor}`} />
+          )}
+        </div>
         <button
           onClick={handleSave}
           disabled={isSaving}
