@@ -73,6 +73,18 @@ export function MarkdownEditor({
       parent: containerRef.current,
     });
 
+    // Direct keydown handler for Cmd/Ctrl+Enter — bypasses CM keymaps (including vim)
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!isSavingRef.current) {
+          onSaveRef.current();
+        }
+      }
+    };
+    view.dom.addEventListener("keydown", onKeyDown);
+
     viewRef.current = view;
 
     if (autoFocus) {
@@ -80,6 +92,7 @@ export function MarkdownEditor({
     }
 
     return () => {
+      view.dom.removeEventListener("keydown", onKeyDown);
       view.destroy();
       viewRef.current = null;
     };
