@@ -3,14 +3,16 @@ import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-shell';
 import { useSettingsStore } from '../store/settings';
 import { useStatusStore } from '../store/status';
+import { AppMode } from '../types';
 
 const isMac = /Mac/i.test(navigator.userAgent);
 
 interface TopBarProps {
   onSettingsClick: () => void;
+  onModeSwitch: (mode: AppMode) => void;
 }
 
-export function TopBar({ onSettingsClick }: TopBarProps) {
+export function TopBar({ onSettingsClick, onModeSwitch }: TopBarProps) {
   const { settings, updateSetting } = useSettingsStore();
   const { setError } = useStatusStore();
   const [isPinning, setIsPinning] = useState(false);
@@ -35,6 +37,11 @@ export function TopBar({ onSettingsClick }: TopBarProps) {
     }
   };
 
+  const handleModeToggle = () => {
+    const next: AppMode = settings.mode === 'scratchpad' ? 'todo' : 'scratchpad';
+    onModeSwitch(next);
+  };
+
   return (
     <div
       data-tauri-drag-region
@@ -42,6 +49,30 @@ export function TopBar({ onSettingsClick }: TopBarProps) {
     >
       <div data-tauri-drag-region className="flex-1" />
       <div className="flex items-center gap-0.5">
+        <button
+          onClick={handleModeToggle}
+          className={`p-1.5 rounded transition-colors ${
+            settings.mode === 'todo'
+              ? 'text-argent-accent hover:bg-argent-bg'
+              : 'text-argent-text-muted hover:bg-argent-bg hover:text-argent-text'
+          }`}
+          title={settings.mode === 'scratchpad' ? 'Switch to Todo' : 'Switch to Scratchpad'}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+            <path d="m9 12 2 2 4-4" />
+          </svg>
+        </button>
         <button
           onClick={handleOpenSB}
           disabled={!settings.sbUrl}

@@ -107,4 +107,46 @@ impl SbClient {
             Err(SbError::ServerError(format!("Status: {}", response.status())))
         }
     }
+
+    pub async fn fetch_note(&self, path: &str) -> Result<String, SbError> {
+        let url = self.normalize_url(path);
+        let response = self.client
+            .get(&url)
+            .header("Authorization", format!("Bearer {}", self.token))
+            .send()
+            .await?;
+
+        if response.status().is_success() {
+            Ok(response.text().await?)
+        } else if response.status() == reqwest::StatusCode::NOT_FOUND {
+            Ok(String::new())
+        } else if response.status() == reqwest::StatusCode::UNAUTHORIZED {
+            Err(SbError::AuthFailed)
+        } else {
+            Err(SbError::ServerError(format!("Status: {}", response.status())))
+        }
+    }
+
+    pub async fn save_note_to_path(&self, path: &str, content: &str) -> Result<SaveResult, SbError> {
+        let url = self.normalize_url(path);
+
+        let response = self.client
+            .put(&url)
+            .header("Authorization", format!("Bearer {}", self.token))
+            .header("Content-Type", "text/markdown")
+            .body(content.to_string())
+            .send()
+            .await?;
+
+        if response.status().is_success() {
+            Ok(SaveResult {
+                path: path.to_string(),
+                url,
+            })
+        } else if response.status() == reqwest::StatusCode::UNAUTHORIZED {
+            Err(SbError::AuthFailed)
+        } else {
+            Err(SbError::ServerError(format!("Status: {}", response.status())))
+        }
+    }
 }

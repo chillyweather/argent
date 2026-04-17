@@ -6,9 +6,13 @@ use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuild
 use tauri::Manager;
 
 #[cfg(target_os = "macos")]
-use cocoa::appkit::{NSWindow, NSWindowCollectionBehavior};
+use cocoa::appkit::{NSView, NSVisualEffectBlendingMode, NSVisualEffectMaterial, NSVisualEffectState, NSVisualEffectView, NSWindow, NSWindowCollectionBehavior};
 #[cfg(target_os = "macos")]
-use cocoa::base::id;
+use cocoa::base::{id, nil};
+#[cfg(target_os = "macos")]
+use cocoa::foundation::NSRect;
+#[cfg(target_os = "macos")]
+use objc::{msg_send, sel, sel_impl};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -17,6 +21,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             save::save_to_sb,
             save::test_connection,
+            save::fetch_note,
+            save::save_note,
             window::set_always_on_top,
             window::show_and_focus,
         ])
@@ -80,6 +86,25 @@ pub fn run() {
                                 | NSWindowCollectionBehavior::NSWindowCollectionBehaviorFullScreenAuxiliary
                                 | NSWindowCollectionBehavior::NSWindowCollectionBehaviorManaged;
                         ns_window.setCollectionBehavior_(behavior);
+
+                        let content_view = ns_window.contentView();
+                        let bounds = NSView::bounds(content_view);
+
+                        let vibrancy_view = NSVisualEffectView::alloc(nil);
+                        let vibrancy_view = NSVisualEffectView::initWithFrame_(vibrancy_view, NSRect::new(bounds.origin, bounds.size));
+
+                        vibrancy_view.setMaterial_(NSVisualEffectMaterial::UnderWindowBackground);
+                        vibrancy_view.setBlendingMode_(NSVisualEffectBlendingMode::BehindWindow);
+                        vibrancy_view.setState_(NSVisualEffectState::Active);
+                        vibrancy_view.setWantsLayer(true);
+
+                        let subviews: id = msg_send![content_view, subviews];
+                        let existing_view: id = msg_send![subviews, objectAtIndex: 0];
+                        
+                        let _: () = msg_send![content_view, replaceSubview: existing_view with: vibrancy_view];
+                        let _: () = msg_send![vibrancy_view, addSubview: existing_view];
+                        
+                        let _: () = msg_send![vibrancy_view, setAutoresizingMask: 18];
                     }
                 }
             }

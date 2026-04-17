@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { useSettingsStore } from '../store/settings';
 import { useStatusStore } from '../store/status';
 import { parseErrorStatus } from '../lib/status';
+import type { Theme } from '../types';
 
 interface SettingsPanelProps {
   onClose: () => void;
@@ -98,6 +99,22 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
               placeholder="Your SilverBullet API token"
               className="w-full px-3 py-2 bg-argent-bg-secondary border border-argent-border rounded text-sm text-argent-text focus:outline-none focus:ring-2 focus:ring-argent-accent focus:border-transparent placeholder:text-argent-text-muted"
             />
+          </div>
+
+          <div>
+            <label className="block text-xs text-argent-text-muted mb-1">
+              Theme
+            </label>
+            <select
+              value={settings.theme}
+              onChange={(e) => updateSetting('theme', e.target.value as Theme)}
+              className="w-full px-3 py-2 bg-argent-bg-secondary border border-argent-border rounded text-sm text-argent-text focus:outline-none focus:ring-2 focus:ring-argent-accent focus:border-transparent"
+            >
+              <option value="system">System</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="nord">Nord</option>
+            </select>
           </div>
 
           <div className="flex items-center justify-between">

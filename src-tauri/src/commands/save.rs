@@ -40,3 +40,35 @@ pub async fn test_connection(
     let client = SbClient::new(&sb_url, &sb_token);
     client.test_connection().await
 }
+
+#[tauri::command]
+pub async fn fetch_note(
+    path: String,
+    sb_url: String,
+    sb_token: String,
+) -> Result<String, SbError> {
+    if sb_url.is_empty() || sb_token.is_empty() {
+        return Ok(String::new());
+    }
+
+    let client = SbClient::new(&sb_url, &sb_token);
+    client.fetch_note(&path).await
+}
+
+#[tauri::command]
+pub async fn save_note(
+    path: String,
+    content: String,
+    sb_url: String,
+    sb_token: String,
+) -> Result<SaveResult, SbError> {
+    if sb_url.is_empty() {
+        return Err(SbError::ConfigMissing("SilverBullet URL is not configured".into()));
+    }
+    if sb_token.is_empty() {
+        return Err(SbError::ConfigMissing("SilverBullet token is not configured".into()));
+    }
+
+    let client = SbClient::new(&sb_url, &sb_token);
+    client.save_note_to_path(&path, &content).await
+}

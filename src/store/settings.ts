@@ -14,6 +14,8 @@ const defaultSettings: Settings = {
   alwaysOnTop: false,
   vimEnabled: false,
   livePreviewEnabled: true,
+  theme: 'system',
+  mode: 'scratchpad',
 };
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -28,6 +30,13 @@ export const useSettingsStore = create<SettingsStore>()(
     }),
     {
       name: 'argent-settings',
+      merge: (persisted, current) => {
+        const p = persisted as { settings?: Partial<Settings> };
+        return {
+          ...current,
+          settings: { ...current.settings, ...p.settings },
+        };
+      },
     }
   )
 );
